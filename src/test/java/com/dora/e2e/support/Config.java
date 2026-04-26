@@ -34,6 +34,9 @@ public final class Config {
 
     public static final String DEFAULT_PASSWORD = "ChangeMe!23";
 
+    /** Password used by all dev-seed users created by V1_1_1 migration. */
+    public static final String DEV_SEED_PASSWORD = "password";
+
     public static final String USER_PLATFORM_ADMIN  = "platform@dora.local";
     public static final String USER_OPS_ANALYST     = "ops@dora.local";
     public static final String USER_INCIDENT_MANAGER = "incident@dora.local";
@@ -41,4 +44,23 @@ public final class Config {
     public static final String USER_CISO            = "ciso@dora.local";
     public static final String USER_BOARD_VIEWER    = "board@dora.local";
     public static final String USER_SYSTEM          = "system@dora.local";
+
+    // --------------- database (direct JDBC — for immutability scenario) ---------------
+
+    /**
+     * JDBC URL for the direct-DB immutability test.
+     * Override with system property {@code db.url}.
+     */
+    public static final String DB_JDBC_URL =
+            System.getProperty("db.url",
+                    System.getenv().getOrDefault("DORA_DB_URL",
+                            "jdbc:postgresql://localhost:5432/dora"));
+
+    public static final String DB_USER =
+            System.getProperty("db.user",
+                    System.getenv().getOrDefault("DORA_DB_USER", "dora"));
+
+    public static final String DB_PASSWORD =
+            System.getProperty("db.password",
+                    System.getenv().getOrDefault("DORA_DB_PASSWORD", "dora"));
 }
