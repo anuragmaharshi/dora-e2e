@@ -108,6 +108,14 @@
       <version>${jackson.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- PostgreSQL JDBC driver — used only by the direct-DB immutability scenario (LLD-03) -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.3</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
