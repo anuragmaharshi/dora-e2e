@@ -116,7 +116,7 @@ public class UiAuthSteps {
     // Then / And
     // -------------------------------------------------------------------------
 
-    @Then("I am redirected to /login")
+    @Then("^I am redirected to \\/login$")
     public void iAmRedirectedToLogin() {
         explicitWait().until(ExpectedConditions.urlContains("/login"));
         assertThat(driver().getCurrentUrl())
@@ -124,7 +124,7 @@ public class UiAuthSteps {
                 .contains("/login");
     }
 
-    @Then("I am on the /login page")
+    @Then("^I am on the \\/login page$")
     public void iAmOnTheLoginPage() {
         // After a refresh, Angular re-evaluates the auth guard and redirects.
         explicitWait().until(ExpectedConditions.urlContains("/login"));
@@ -133,7 +133,7 @@ public class UiAuthSteps {
                 .contains("/login");
     }
 
-    @Then("I am redirected to the home page (not /login)")
+    @Then("^I am redirected to the home page \\(not \\/login\\)$")
     public void iAmRedirectedToTheHomePage() {
         homePage().waitForRedirectAwayFromLogin();
         assertThat(driver().getCurrentUrl())

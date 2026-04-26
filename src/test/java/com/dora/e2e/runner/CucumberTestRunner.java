@@ -23,8 +23,7 @@ import static io.cucumber.junit.platform.engine.Constants.*;
         value = "com.dora.e2e.steps,com.dora.e2e.support")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME,
         value = "pretty,html:target/cucumber-reports/report.html,json:target/cucumber-reports/report.json")
-@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME,
-        value = "#{systemProperty('cucumber.filter.tags') != null ? systemProperty('cucumber.filter.tags') : 'not @wip'}")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip")
 public class CucumberTestRunner {
     // intentionally empty — the @Suite annotations drive everything
 }

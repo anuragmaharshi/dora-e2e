@@ -66,13 +66,13 @@ public class ApiAuthSteps {
     // When
     // -------------------------------------------------------------------------
 
-    @When("I POST /api/v1/auth/login with email {string} and password {string}")
+    @When("^I POST /api/v1/auth/login with email \"([^\"]*)\" and password \"([^\"]*)\"$")
     public void iPostLoginWithEmailAndPassword(String email, String password) {
         Response response = authClient.login(email, password);
         world.setLastResponse(response);
     }
 
-    @When("I GET /api/v1/auth/me with the JWT")
+    @When("^I GET /api/v1/auth/me with the JWT$")
     public void iGetMeWithTheJwt() {
         String jwt = world.getJwtToken();
         assertThat(jwt)
@@ -83,13 +83,13 @@ public class ApiAuthSteps {
         world.setLastResponse(response);
     }
 
-    @When("I GET /api/v1/auth/me without any Authorization header")
+    @When("^I GET /api/v1/auth/me without any Authorization header$")
     public void iGetMeWithoutAnyAuthorizationHeader() {
         Response response = authClient.getMeWithoutToken();
         world.setLastResponse(response);
     }
 
-    @When("I GET /api/v1/incidents/_probe with the JWT")
+    @When("^I GET /api/v1/incidents/_probe with the JWT$")
     public void iGetIncidentProbeWithTheJwt() {
         String jwt = world.getJwtToken();
         assertThat(jwt)
