@@ -28,7 +28,7 @@ public class AuthApiClient {
      * @return full RestAssured response
      */
     public Response login(String email, String password) {
-        String body = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", email, password);
+        String body = String.format("{\"email\":\"%s\",\"password\":\"%s\"}", email, password);
         return baseSpec()
                 .body(body)
                 .when()

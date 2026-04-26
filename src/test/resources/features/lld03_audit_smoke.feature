@@ -25,7 +25,7 @@ Feature: Audit Trail Core — smoke tests
   @AC-4
   Scenario: Permitted role reads the audit log
     Given the test audit row for the probe entity exists
-    And the user "compliance@dora.local" has logged in with password "password"
+    And the user "compliance@dora.local" has logged in with password "ChangeMe!23"
     When they call GET /api/v1/audit with entity "PROBE" and the probe entity id
     Then the response status is 200
     And the response content array is not empty
@@ -33,14 +33,14 @@ Feature: Audit Trail Core — smoke tests
   @AC-5
   Scenario: Denied role receives 403
     Given the test audit row for the probe entity exists
-    And the user "platform@dora.local" has logged in with password "password"
+    And the user "platform@dora.local" has logged in with password "ChangeMe!23"
     When they call GET /api/v1/audit with entity "PROBE" and the probe entity id
     Then the response status is 403
 
   @AC-2
   Scenario: Audit entry fields are all non-null
     Given the test audit row for the probe entity exists
-    And the user "compliance@dora.local" has logged in with password "password"
+    And the user "compliance@dora.local" has logged in with password "ChangeMe!23"
     When they call GET /api/v1/audit with entity "PROBE" and the probe entity id
     Then the response status is 200
     And the response content array is not empty

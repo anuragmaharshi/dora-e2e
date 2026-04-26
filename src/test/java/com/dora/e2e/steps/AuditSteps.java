@@ -142,7 +142,7 @@ public class AuditSteps {
     // API query step — GET /api/v1/audit
     // -------------------------------------------------------------------------
 
-    @When("they call GET /api/v1/audit with entity {string} and the probe entity id")
+    @When("^they call GET /api/v1/audit with entity \"([^\"]*)\" and the probe entity id$")
     public void theyCallGetAuditWithEntityAndProbeId(String entityType) {
         String jwt      = world.getJwtToken();
         String entityId = world.getProbeEntityId();
