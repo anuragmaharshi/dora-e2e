@@ -37,6 +37,20 @@ public class World {
      */
     private TamperResult lastTamperResult;
 
+    // ---- LLD-04 admin smoke state ----
+
+    /**
+     * JWT token for the bank-user role (ops@dora.local).
+     * Kept separate from jwtToken so admin and bank-user steps can coexist in one scenario.
+     */
+    private String bankUserJwtToken;
+
+    /**
+     * ID of a critical service created or looked up during the current scenario.
+     * Used to chain create → archive steps without coupling step implementations.
+     */
+    private String lastCriticalServiceId;
+
     // ---- accessors ----
 
     public String getJwtToken() { return jwtToken; }
@@ -53,4 +67,10 @@ public class World {
 
     public TamperResult getLastTamperResult() { return lastTamperResult; }
     public void setLastTamperResult(TamperResult lastTamperResult) { this.lastTamperResult = lastTamperResult; }
+
+    public String getBankUserJwtToken() { return bankUserJwtToken; }
+    public void setBankUserJwtToken(String bankUserJwtToken) { this.bankUserJwtToken = bankUserJwtToken; }
+
+    public String getLastCriticalServiceId() { return lastCriticalServiceId; }
+    public void setLastCriticalServiceId(String lastCriticalServiceId) { this.lastCriticalServiceId = lastCriticalServiceId; }
 }
