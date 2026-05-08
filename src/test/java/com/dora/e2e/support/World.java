@@ -51,6 +51,38 @@ public class World {
      */
     private String lastCriticalServiceId;
 
+    // ---- LLD-05 incident state ----
+
+    /**
+     * UUID of the last incident created during the current scenario.
+     * Used to chain create → attach / link asset steps.
+     */
+    private String lastIncidentId;
+
+    /**
+     * JWT token for the incident manager role (incident@dora.local).
+     * Kept separate from jwtToken so ops and manager steps can coexist.
+     */
+    private String incidentManagerJwtToken;
+
+    /**
+     * UUID of the last attachment created during the current scenario.
+     * Used to chain presigned-URL → upload → complete steps.
+     */
+    private String lastAttachmentId;
+
+    /**
+     * The presigned upload URL returned by the attachments endpoint.
+     * Stored here so the upload step can retrieve it without re-calling the API.
+     */
+    private String lastPresignedUploadUrl;
+
+    /**
+     * JWT token for platform admin (platform@dora.local).
+     * Used by AC-8 platform admin block scenarios.
+     */
+    private String platformAdminJwtToken;
+
     // ---- accessors ----
 
     public String getJwtToken() { return jwtToken; }
@@ -73,4 +105,19 @@ public class World {
 
     public String getLastCriticalServiceId() { return lastCriticalServiceId; }
     public void setLastCriticalServiceId(String lastCriticalServiceId) { this.lastCriticalServiceId = lastCriticalServiceId; }
+
+    public String getLastIncidentId() { return lastIncidentId; }
+    public void setLastIncidentId(String lastIncidentId) { this.lastIncidentId = lastIncidentId; }
+
+    public String getIncidentManagerJwtToken() { return incidentManagerJwtToken; }
+    public void setIncidentManagerJwtToken(String incidentManagerJwtToken) { this.incidentManagerJwtToken = incidentManagerJwtToken; }
+
+    public String getLastAttachmentId() { return lastAttachmentId; }
+    public void setLastAttachmentId(String lastAttachmentId) { this.lastAttachmentId = lastAttachmentId; }
+
+    public String getLastPresignedUploadUrl() { return lastPresignedUploadUrl; }
+    public void setLastPresignedUploadUrl(String lastPresignedUploadUrl) { this.lastPresignedUploadUrl = lastPresignedUploadUrl; }
+
+    public String getPlatformAdminJwtToken() { return platformAdminJwtToken; }
+    public void setPlatformAdminJwtToken(String platformAdminJwtToken) { this.platformAdminJwtToken = platformAdminJwtToken; }
 }
