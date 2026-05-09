@@ -73,6 +73,7 @@ public class AuditSteps {
      * Seeds a probe audit row via the test-profile endpoint.
      * If the endpoint returns 404 the scenario is marked {@code @Pending} — the test-profile
      * endpoint is only active when Spring profile {@code test} is enabled.
+     * Authenticates with OPS_ANALYST credentials if the unauthenticated call returns 401.
      */
     @When("the test audit-emit endpoint is called with entityType {string} and action {string}")
     public void theTestAuditEmitEndpointIsCalledWith(String entityType, String action) {
@@ -81,7 +82,14 @@ public class AuditSteps {
                 .as("Probe entity id must be set before calling audit-emit")
                 .isNotBlank();
 
+        // Try unauthenticated first; fall back to authenticated if endpoint requires auth
         Response response = auditClient.emitAuditRow(entityType, entityId, action);
+
+        if (response.statusCode() == 401) {
+            // Endpoint requires authentication — obtain a JWT and retry
+            String jwt = obtainAnyValidJwt();
+            response = auditClient.emitAuditRow(jwt, entityType, entityId, action);
+        }
 
         if (response.statusCode() == 404) {
             throw new PendingException(
@@ -96,6 +104,7 @@ public class AuditSteps {
     /**
      * Ensures the probe audit row exists before scenarios that depend on it.
      * Seeds the row by calling the test-emit endpoint; pends if the endpoint is absent.
+     * Authenticates with OPS_ANALYST credentials if the unauthenticated call returns 401.
      */
     @Given("the test audit row for the probe entity exists")
     public void theTestAuditRowForTheProbeEntityExists() {
@@ -104,7 +113,13 @@ public class AuditSteps {
                 .as("Probe entity id must be set in the Background step")
                 .isNotBlank();
 
+        // Try unauthenticated first; fall back to authenticated if endpoint requires auth
         Response emitResponse = auditClient.emitAuditRow("PROBE", entityId, "SYSTEM");
+
+        if (emitResponse.statusCode() == 401) {
+            String jwt = obtainAnyValidJwt();
+            emitResponse = auditClient.emitAuditRow(jwt, "PROBE", entityId, "SYSTEM");
+        }
 
         if (emitResponse.statusCode() == 404) {
             throw new PendingException(
@@ -209,6 +224,34 @@ public class AuditSteps {
         assertThat(createdAt)
                 .as("content[0].createdAt must not be null or blank")
                 .isNotBlank();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Obtains a JWT from the login endpoint using OPS_ANALYST credentials.
+     * Used when the test-profile audit-emit endpoint requires authentication.
+     *
+     * @return non-blank JWT token string
+     */
+    private String obtainAnyValidJwt() {
+        Response loginResponse = authClient.login(
+                com.dora.e2e.support.Config.USER_OPS_ANALYST,
+                com.dora.e2e.support.Config.DEV_SEED_PASSWORD);
+
+        assertThat(loginResponse.statusCode())
+                .as("OPS_ANALYST login to obtain JWT for audit-emit seed must return 200. Body: %s",
+                        loginResponse.body().asString())
+                .isEqualTo(200);
+
+        String token = loginResponse.jsonPath().getString("token");
+        assertThat(token)
+                .as("OPS_ANALYST login must return a non-blank JWT token")
+                .isNotBlank();
+
+        return token;
     }
 
     // -------------------------------------------------------------------------

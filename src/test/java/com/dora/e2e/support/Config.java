@@ -35,7 +35,7 @@ public final class Config {
     public static final String DEFAULT_PASSWORD = "ChangeMe!23";
 
     /** Password used by all dev-seed users created by V1_1_1 migration. */
-    public static final String DEV_SEED_PASSWORD = "password";
+    public static final String DEV_SEED_PASSWORD = "ChangeMe!23";
 
     public static final String USER_PLATFORM_ADMIN  = "platform@dora.local";
     public static final String USER_OPS_ANALYST     = "ops@dora.local";

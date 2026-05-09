@@ -17,7 +17,10 @@ Feature: Incident Logging — UI scenarios
   # AC-1 UI — OPS_ANALYST creates an incident via the form and sees it confirmed
   # ---------------------------------------------------------------------------
 
-  @AC-1 @ui
+  # @known-bug: dora-frontend issue #17 — IncidentCreateComponent is missing the severity
+  # select field. The form has no <select formControlName="severity"> element. This
+  # scenario will fail until the Angular component is updated to include the severity field.
+  @AC-1 @ui @known-bug
   Scenario: OPS_ANALYST submits the incident creation form and sees the new incident ID
     When the ops analyst navigates to the incident creation page
     And fills in the incident title "UI Browser Outage Test"

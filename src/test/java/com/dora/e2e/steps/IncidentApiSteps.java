@@ -133,15 +133,6 @@ public class IncidentApiSteps {
     // Shared Given — "the DORA stack is healthy" (delegates to Hooks.@BeforeAll)
     // -------------------------------------------------------------------------
 
-    /**
-     * No-op step: the @BeforeAll hook in Hooks.java already verified stack health
-     * before any scenario ran. This step exists for Gherkin readability only.
-     */
-    @Given("the DORA stack is healthy")
-    public void theDoraStackIsHealthy() {
-        // Stack health was verified in Hooks.@BeforeAll. Nothing to do here.
-    }
-
     // -------------------------------------------------------------------------
     // AC-1 — Create incident
     // -------------------------------------------------------------------------
@@ -590,7 +581,7 @@ public class IncidentApiSteps {
     // AC-8 — PLATFORM_ADMIN blocked
     // -------------------------------------------------------------------------
 
-    @When("the platform admin attempts to POST /api/v1/incidents")
+    @When("^the platform admin attempts to POST /api/v1/incidents$")
     public void thePlatformAdminAttemptsToPostIncidents() {
         String jwt = world.getPlatformAdminJwtToken();
         assertThat(jwt).as("PLATFORM_ADMIN JWT must be set").isNotBlank();
@@ -599,7 +590,7 @@ public class IncidentApiSteps {
         world.setLastResponse(response);
     }
 
-    @When("the platform admin attempts to GET /api/v1/incidents")
+    @When("^the platform admin attempts to GET /api/v1/incidents$")
     public void thePlatformAdminAttemptsToGetIncidents() {
         String jwt = world.getPlatformAdminJwtToken();
         assertThat(jwt).as("PLATFORM_ADMIN JWT must be set").isNotBlank();
