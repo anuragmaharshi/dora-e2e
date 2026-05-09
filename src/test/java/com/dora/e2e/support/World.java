@@ -51,6 +51,12 @@ public class World {
      */
     private String lastCriticalServiceId;
 
+    /**
+     * Name (with UUID suffix) of the last critical service created in the current scenario.
+     * Used to assert the created service name when a UUID suffix was appended for uniqueness.
+     */
+    private String lastCriticalServiceName;
+
     // ---- LLD-05 incident state ----
 
     /**
@@ -105,6 +111,9 @@ public class World {
 
     public String getLastCriticalServiceId() { return lastCriticalServiceId; }
     public void setLastCriticalServiceId(String lastCriticalServiceId) { this.lastCriticalServiceId = lastCriticalServiceId; }
+
+    public String getLastCriticalServiceName() { return lastCriticalServiceName; }
+    public void setLastCriticalServiceName(String lastCriticalServiceName) { this.lastCriticalServiceName = lastCriticalServiceName; }
 
     public String getLastIncidentId() { return lastIncidentId; }
     public void setLastIncidentId(String lastIncidentId) { this.lastIncidentId = lastIncidentId; }

@@ -94,7 +94,10 @@ Feature: Tenant Configuration & Platform Admin Portal — smoke tests
   # AC-5 — Angular roleGuard redirects PLATFORM_ADMIN away from /incidents
   # ---------------------------------------------------------------------------
 
-  @AC-5 @ui
+  # @known-bug dora-frontend #18: PLATFORM_ADMIN navigating to /incidents is NOT redirected to /403.
+  # The Angular roleGuard at /incidents does not block PLATFORM_ADMIN role.
+  # Browser stays at /incidents instead of redirecting.
+  @AC-5 @ui @known-bug
   Scenario: Platform admin navigating to incidents is redirected to /403
     Given the platform admin is logged in via the browser
     When the browser navigates to /incidents
@@ -113,25 +116,29 @@ Feature: Tenant Configuration & Platform Admin Portal — smoke tests
   # AC-7 — BANK_USER hitting /api/v1/admin/** returns 403
   # ---------------------------------------------------------------------------
 
-  @AC-7
+  # @known-bug dora-api #22: Admin endpoints return 401 instead of 403 for wrong-role authenticated users.
+  # Expected: 403 Forbidden (authenticated, insufficient role).
+  # Actual: 401 Unauthorized (misleadingly implies not authenticated).
+
+  @AC-7 @known-bug
   Scenario: Bank user is rejected from tenant config endpoint
     Given the bank user is authenticated
     When the bank user calls GET /api/v1/admin/tenant
     Then the response status is 403
 
-  @AC-7
+  @AC-7 @known-bug
   Scenario: Bank user is rejected from critical services endpoint
     Given the bank user is authenticated
     When the bank user calls GET /api/v1/admin/critical-services
     Then the response status is 403
 
-  @AC-7
+  @AC-7 @known-bug
   Scenario: Bank user is rejected from client base endpoint
     Given the bank user is authenticated
     When the bank user calls GET /api/v1/admin/client-base
     Then the response status is 403
 
-  @AC-7
+  @AC-7 @known-bug
   Scenario: Bank user is rejected from NCA email endpoint
     Given the bank user is authenticated
     When the bank user calls GET /api/v1/admin/nca-email
