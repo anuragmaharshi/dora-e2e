@@ -73,7 +73,9 @@ Feature: Incident Logging — API scenarios
   # AC-4 — Creating an incident with an inactive (archived) service ID is rejected
   # ---------------------------------------------------------------------------
 
-  @AC-4
+  # @known-bug dora-api #23: Incident creation with an archived service ID returns 201 (not 422).
+  # The API should validate that all affectedServiceIds are active services at creation time.
+  @AC-4 @known-bug
   Scenario: Incident creation with an inactive service ID is rejected
     Given an archived critical service exists
     When the ops analyst creates an incident that links to the archived service

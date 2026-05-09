@@ -36,7 +36,8 @@ public class AuditApiClient {
     // -------------------------------------------------------------------------
 
     /**
-     * Seeds a single audit row for an arbitrary entity via the test-profile endpoint.
+     * Seeds a single audit row for an arbitrary entity via the test-profile endpoint
+     * (unauthenticated).
      *
      * <p>This endpoint is only active when the Spring profile {@code test} is enabled.
      * If the stack is running without that profile, this call returns 404 — callers
@@ -53,6 +54,27 @@ public class AuditApiClient {
                 entityType, entityId, action);
 
         return baseSpec()
+                .body(body)
+                .when()
+                .post("/api/v1/_test/audit-emit");
+    }
+
+    /**
+     * Seeds a single audit row using the supplied JWT bearer token.
+     * Use this variant when the test endpoint is protected by authentication.
+     *
+     * @param jwt        bearer token (without the "Bearer " prefix)
+     * @param entityType the entity type string (e.g. {@code "PROBE"})
+     * @param entityId   UUID string of the entity to audit
+     * @param action     the action string (e.g. {@code "SYSTEM"})
+     * @return full RestAssured response
+     */
+    public Response emitAuditRow(String jwt, String entityType, String entityId, String action) {
+        String body = String.format(
+                "{\"entityType\":\"%s\",\"entityId\":\"%s\",\"action\":\"%s\"}",
+                entityType, entityId, action);
+
+        return authedSpec(jwt)
                 .body(body)
                 .when()
                 .post("/api/v1/_test/audit-emit");

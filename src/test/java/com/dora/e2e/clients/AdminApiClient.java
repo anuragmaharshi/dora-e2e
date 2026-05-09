@@ -6,6 +6,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 /**
@@ -85,7 +86,10 @@ public class AdminApiClient {
 
     /**
      * PUT /api/v1/admin/tenant — partial update: only legalName and ncaEmail.
-     * Other fields are left unchanged by passing reasonable placeholder values.
+     * Other fields are left at reasonable values.
+     *
+     * <p>NOTE: The {@code lei} field requires exactly 20 uppercase alphanumeric characters
+     * matching {@code ^[A-Z0-9]{20}$}. A shorter value causes a 400/401 validation rejection.
      *
      * @param jwt       bearer token for PLATFORM_ADMIN
      * @param legalName new legal name
@@ -94,7 +98,7 @@ public class AdminApiClient {
      */
     public Response updateTenantConfigPartial(String jwt, String legalName, String ncaEmail) {
         String body = String.format(
-                "{\"legalName\":\"%s\",\"lei\":\"TESTLEI0000001\"," +
+                "{\"legalName\":\"%s\",\"lei\":\"TESTLEI0000000010001\"," +
                 "\"ncaName\":\"Test NCA\",\"ncaEmail\":\"%s\",\"jurisdictionIso\":\"IE\"}",
                 legalName, ncaEmail);
         return baseSpec(jwt)
@@ -150,16 +154,18 @@ public class AdminApiClient {
     }
 
     /**
-     * DELETE /api/v1/admin/critical-services/{id} — archive (soft-delete) a critical service.
+     * POST /api/v1/admin/critical-services/{id}/archive — archive (soft-delete) a critical service.
+     *
+     * <p>The API uses POST .../archive, not DELETE, for this operation.
      *
      * @param jwt bearer token for PLATFORM_ADMIN
      * @param id  UUID of the critical service to archive
-     * @return full RestAssured response
+     * @return full RestAssured response (204 on success)
      */
     public Response archiveCriticalService(String jwt, String id) {
         return baseSpec(jwt)
                 .when()
-                .delete("/api/v1/admin/critical-services/" + id);
+                .post("/api/v1/admin/critical-services/" + id + "/archive");
     }
 
     // -------------------------------------------------------------------------
@@ -181,14 +187,16 @@ public class AdminApiClient {
     /**
      * POST /api/v1/admin/client-base — record a new client base count.
      *
-     * @param jwt          bearer token for PLATFORM_ADMIN
-     * @param clientCount  number of clients
-     * @param effectiveDate the effective date (ISO date string, e.g. "2026-05-07")
+     * <p>The API DTO uses {@code effectiveFrom} (ISO-8601 datetime), not {@code effectiveDate}.
+     *
+     * @param jwt            bearer token for PLATFORM_ADMIN
+     * @param clientCount    number of clients
+     * @param effectiveFrom  the effective datetime (ISO-8601, e.g. "2026-05-07T00:00:00Z")
      * @return full RestAssured response
      */
-    public Response createClientBaseEntry(String jwt, long clientCount, String effectiveDate) {
-        String body = String.format("{\"clientCount\":%d,\"effectiveDate\":\"%s\"}",
-                clientCount, effectiveDate);
+    public Response createClientBaseEntry(String jwt, long clientCount, String effectiveFrom) {
+        String body = String.format("{\"clientCount\":%d,\"effectiveFrom\":\"%s\"}",
+                clientCount, effectiveFrom);
         return baseSpec(jwt)
                 .body(body)
                 .when()
@@ -196,14 +204,19 @@ public class AdminApiClient {
     }
 
     /**
-     * POST /api/v1/admin/client-base — record a new client base count effective today.
+     * POST /api/v1/admin/client-base — record a new client base count effective now.
+     *
+     * <p>Uses {@code Instant.now()} formatted as full ISO-8601 with seconds
+     * (e.g. "2026-05-09T12:00:00Z") to satisfy the API's datetime validation.
      *
      * @param jwt         bearer token for PLATFORM_ADMIN
      * @param clientCount number of clients
      * @return full RestAssured response
      */
     public Response createClientBaseEntry(String jwt, long clientCount) {
-        return createClientBaseEntry(jwt, clientCount, LocalDate.now().toString());
+        // Instant.now().toString() gives "2026-05-09T12:00:00.123456789Z" — truncate to seconds
+        String effectiveFrom = Instant.now().toString().replaceAll("\\.[0-9]+Z$", "Z");
+        return createClientBaseEntry(jwt, clientCount, effectiveFrom);
     }
 
     // -------------------------------------------------------------------------

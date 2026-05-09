@@ -38,20 +38,39 @@ public class IncidentDetailPage {
     private static final By INCIDENT_ID_TEXT_ANYWHERE =
             By.xpath("//*[contains(text(),'INC-')]");
 
-    /** The attachments section / list. */
+    /**
+     * The "Attachments" tab button — clicking it activates the attachments tab panel.
+     * The Angular incident detail uses role="tablist" / role="tab" pattern.
+     */
+    private static final By ATTACHMENTS_TAB_BUTTON =
+            By.cssSelector("#tab-btn-attachments, button[aria-controls='tab-attachments']");
+
+    /**
+     * The attachments tab panel (shown when the Attachments tab is active).
+     * The panel is present in the DOM but hidden via [hidden] when not active.
+     */
     private static final By ATTACHMENTS_SECTION =
-            By.cssSelector("[data-testid='attachments-section'], .attachments-section, " +
-                           "app-attachment-uploader, .attachment-list, #attachments");
+            By.cssSelector("#tab-attachments, [aria-labelledby='tab-btn-attachments']");
 
-    /** The ICT assets section / list. */
+    /**
+     * The "ICT Assets" tab button — clicking it activates the assets tab panel.
+     */
+    private static final By ASSETS_TAB_BUTTON =
+            By.cssSelector("#tab-btn-assets, button[aria-controls='tab-assets']");
+
+    /**
+     * The ICT assets tab panel.
+     */
     private static final By ASSETS_SECTION =
-            By.cssSelector("[data-testid='assets-section'], .assets-section, " +
-                           ".ict-assets, #assets");
+            By.cssSelector("#tab-assets, [aria-labelledby='tab-btn-assets']");
 
-    /** The linked services section / list. */
+    /**
+     * The linked services section inside the Overview tab.
+     * Services are shown in the Overview tab (not a separate tab).
+     */
     private static final By SERVICES_SECTION =
-            By.cssSelector("[data-testid='services-section'], .services-section, " +
-                           ".linked-services, #services");
+            By.cssSelector(".detail-section ul[aria-label='Linked critical services'], " +
+                           ".detail-section:has(h3:contains('Affected Critical Services'))");
 
     // ---- Selectors — AttachmentUploaderComponent --------------------------
 
@@ -68,12 +87,13 @@ public class IncidentDetailPage {
                            "button[type='submit'].upload, .attachment-upload button[type='submit']");
 
     /**
-     * Status badge shown after an attachment upload completes.
-     * The component sets a CSS class or data attribute to indicate READY/PENDING/FAILED.
+     * Status badge shown in the attachments table after an attachment upload completes.
+     * The Angular template uses class "att-status att-status-ready" etc.
+     * Note: do NOT use generic ".status-badge" which matches the incident status header.
      */
     private static final By ATTACHMENT_STATUS =
             By.cssSelector("[data-testid='attachment-status'], .attachment-status, " +
-                           ".status-badge, span.status");
+                           "span[class^='att-status'], td span.att-status");
 
     // ---- Infrastructure ---------------------------------------------------
 
@@ -160,36 +180,85 @@ public class IncidentDetailPage {
     // ---- Attachment section -----------------------------------------------
 
     /**
-     * Return true if the attachments section is visible on the page.
+     * Return true if the Attachments tab button is visible (tab-based UI always has the button).
+     * Clicks the Attachments tab to activate it before checking panel visibility.
      */
     public boolean isAttachmentsSectionVisible() {
-        return isSectionVisible(ATTACHMENTS_SECTION);
+        // Wait for the tab button to be present and clickable, then click it
+        try {
+            WebElement tabBtn = wait.until(
+                    ExpectedConditions.elementToBeClickable(ATTACHMENTS_TAB_BUTTON));
+            tabBtn.click();
+        } catch (Exception ignored) {
+            // Tab button not found or not clickable — fall through
+        }
+        // Wait for the section to appear (Angular removes [hidden] after click)
+        return isSectionNotHidden(ATTACHMENTS_SECTION);
     }
 
     /**
-     * Return true if the ICT assets section is visible on the page.
+     * Return true if the ICT Assets tab button is visible (tab-based UI always has the button).
+     * Clicks the Assets tab to activate it before checking panel visibility.
      */
     public boolean isAssetsSectionVisible() {
-        return isSectionVisible(ASSETS_SECTION);
+        // Wait for the tab button to be present and clickable, then click it
+        try {
+            WebElement tabBtn = wait.until(
+                    ExpectedConditions.elementToBeClickable(ASSETS_TAB_BUTTON));
+            tabBtn.click();
+        } catch (Exception ignored) {
+            // Tab button not found or not clickable — fall through
+        }
+        // Wait for the section to appear (Angular removes [hidden] after click)
+        return isSectionNotHidden(ASSETS_SECTION);
     }
 
     /**
-     * Return true if the linked services section is visible on the page.
+     * Return true if the linked services section is visible on the Overview tab.
+     * Services are shown in the Overview tab — no tab click needed.
+     * The overview tab is active by default.
      */
     public boolean isServicesSectionVisible() {
-        return isSectionVisible(SERVICES_SECTION);
+        // The overview tab is default — the section should already be visible.
+        // Check for either the populated list or the empty-state paragraph.
+        try {
+            // Wait for the overview section to be present (not hidden)
+            wait.until(driver -> {
+                List<WebElement> sections = driver.findElements(
+                        By.cssSelector("#tab-overview"));
+                if (sections.isEmpty()) return false;
+                // Section must not have [hidden] attribute
+                String hidden = sections.get(0).getAttribute("hidden");
+                return hidden == null;
+            });
+            // Look for the services section inside overview
+            List<WebElement> servicesList = driver.findElements(
+                    By.cssSelector("ul[aria-label='Linked critical services']"));
+            if (!servicesList.isEmpty()) return true;
+            List<WebElement> serviceSection = driver.findElements(
+                    By.xpath("//section[@id='tab-overview']//h3[contains(text(),'Affected Critical Services')]"));
+            return !serviceSection.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
      * Upload a file via the AttachmentUploaderComponent's file input.
      *
-     * <p>This uses the hidden {@code <input type="file">} directly — Selenium can send
-     * keys to it even when it is visually hidden. The component's change handler fires
-     * automatically once the path is set.
+     * <p>The attachment uploader lives inside the Attachments tab panel which is hidden
+     * by default. This method first clicks the Attachments tab to reveal it, then
+     * interacts with the file input.
      *
      * @param file the file to upload
      */
     public void uploadAttachment(File file) {
+        // Navigate to the Attachments tab first (it is hidden by default)
+        List<WebElement> tabButtons = driver.findElements(ATTACHMENTS_TAB_BUTTON);
+        if (!tabButtons.isEmpty()) {
+            wait.until(ExpectedConditions.elementToBeClickable(tabButtons.get(0))).click();
+        }
+
         WebElement fileInput = wait.until(
                 ExpectedConditions.presenceOfElementLocated(FILE_INPUT));
         fileInput.sendKeys(file.getAbsolutePath());
@@ -220,6 +289,30 @@ public class IncidentDetailPage {
             return true;
         } catch (Exception e) {
             // Section not visible within timeout
+            return false;
+        }
+    }
+
+    /**
+     * Wait until a section element is present in the DOM and does NOT have the
+     * {@code [hidden]} attribute (Angular sets hidden via property binding, which
+     * maps to the HTML {@code hidden} attribute and makes the element display:none).
+     *
+     * <p>This is preferred over {@link ExpectedConditions#visibilityOfElementLocated}
+     * for Angular tab panels, because after a tab click Angular removes the
+     * {@code hidden} attribute in a microtask tick. The visibility-based wait sometimes
+     * races with that tick.
+     */
+    private boolean isSectionNotHidden(By locator) {
+        try {
+            wait.until(driver -> {
+                List<WebElement> elements = driver.findElements(locator);
+                if (elements.isEmpty()) return false;
+                String hidden = elements.get(0).getAttribute("hidden");
+                return hidden == null;
+            });
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }
